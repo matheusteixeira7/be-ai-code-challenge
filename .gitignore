@@ -1,0 +1,10 @@
+# Python cache files
+__pycache__/
+.pytest_cache/
+
+# Dependencies directory of Node.js
+# In case the candidate installs some Node tools.
+node_modules/
+
+# Junit reports
+junit-reports/

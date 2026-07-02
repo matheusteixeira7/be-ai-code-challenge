@@ -1,0 +1,25 @@
+[project]
+name = "flask-sqlite-app"
+version = "0.1.0"
+description = ""
+authors = [{ name = "coderpad", email = "not_a_true_email@coderpad.io" }]
+
+requires-python = ">=3.12"
+dependencies = [
+    "flask (>=3.1.1,<4.0.0)",
+    "sqlalchemy (>=2.0.41,<3.0.0)",
+    "flask-sqlalchemy (>=3.1.1,<4.0.0)",
+]
+
+[tool.poetry]
+packages = [{ include = "flask_sqlite_app", from = "src" }]
+
+[tool.poetry.scripts]
+myserver = "run:main"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.1"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
