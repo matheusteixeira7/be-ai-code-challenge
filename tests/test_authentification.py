@@ -101,3 +101,28 @@ def test_password_storage(app, client):
             results = conn.execute(text(query)).fetchall()
             assert len(results) == 1
             assert results[0][0] != "abcd1234"
+
+
+@pytest.mark.display_name("Creating a duplicate account name returns a clean error, not a crash")
+def test_duplicate_name_rejected(app, client):
+    # Create a user.
+    response = client.post("/admin/accounts", json={
+        "name": "autotest_dup_user",
+        "password": "pw",
+        "settings": ""
+    })
+    assert response.status_code == 201
+
+    # Creating the same name again must be a clean client error, not a 500.
+    response = client.post("/admin/accounts", json={
+        "name": "autotest_dup_user",
+        "password": "pw",
+        "settings": ""
+    })
+    assert 400 <= response.status_code < 500
+
+    # No duplicate was created and the session recovered.
+    response = client.get("/admin/accounts")
+    assert response.status_code == 200
+    names = [a["name"] for a in response.get_json()]
+    assert names.count("autotest_dup_user") == 1
