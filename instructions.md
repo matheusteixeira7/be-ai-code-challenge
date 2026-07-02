@@ -6,7 +6,7 @@ You are a developer at your own start-up, building the backend of the **FutureTo
 
 The database contains a table `account` with the fields `name`, `password` and `settings`. Two sample users are created automatically the first time the app starts.
 
-The backend **already** handles the following (you do **not** need to build these):
+The backend **already** handles the following (you do **not** need to build these — though one of them has a bug you'll fix in Step 1):
 
 - `POST /admin/accounts` — create a user
 - `GET /admin/accounts` — list users
@@ -38,7 +38,7 @@ Recommended workflow:
 2. Work **one step at a time**, in the order below, re-running the tests as you go.
 3. A step is done when its corresponding test passes. Move on once it is green.
 
-You are free to add or change any application code you need. You are **not** expected to modify the tests. They already fail because the required features don't exist yet — implementing each step is what turns the matching test green. There is nothing to "fix" in the test file itself.
+You are free to add or change any application code you need. You are **not** expected to modify the tests. They fail for different reasons — most because the required feature doesn't exist yet, and one because of an existing bug — and working through each step (building the new features and fixing the bug) is what turns the matching test green. There is nothing to "fix" in the test file itself.
 
 Each failing test maps directly to one part of the work below:
 
