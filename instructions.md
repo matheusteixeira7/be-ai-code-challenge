@@ -18,8 +18,9 @@ Now you want users to be able to **log in** and **retrieve their own settings**.
 
 ## Your goal
 
-1. Add token-based authentication so a user can log in and read their settings (Step 1).
-2. Store passwords securely as hashes instead of clear text (Step 2).
+1. Fix a bug in the existing account-creation endpoint (Step 1).
+2. Add token-based authentication so a user can log in and read their settings (Step 2).
+3. Store passwords securely as hashes instead of clear text (Step 3).
 
 ## How this is evaluated — start here
 
@@ -43,13 +44,30 @@ Each failing test maps directly to one part of the work below:
 
 | Failing test | What makes it pass |
 | --- | --- |
-| `test_register_and_login` | Step 1 — create `POST /login` and `GET /settings` |
-| `test_db_field_size` | Step 2, Part A — enlarge the `password` field to 255 |
-| `test_password_storage` | Step 2, Part B — hash and verify passwords |
+| `test_duplicate_name_rejected` | Step 1 — fix the duplicate-name crash |
+| `test_register_and_login` | Step 2 — create `POST /login` and `GET /settings` |
+| `test_db_field_size` | Step 3, Part A — enlarge the `password` field to 255 |
+| `test_password_storage` | Step 3, Part B — hash and verify passwords |
 
 (`test_simple`, the health check, passes from the start.)
 
-## Step 1 — Token authentication
+## Step 1 — Fix a bug
+
+A teammate reports:
+
+> Creating an account with a name that already exists returns
+> `500 Internal Server Error` instead of a clean error.
+
+Reproduce it first (tip: an account named `Elaine` already exists, so try
+creating another one with that name), then find the root cause and fix it so
+that creating an account with a duplicate name:
+
+- returns a **client error** (a `4xx` status), not a `500`, and
+- does **not** create a second account.
+
+The test `test_duplicate_name_rejected` is green when this is done.
+
+## Step 2 — Token authentication
 
 Implement two new routes. **Neither of them exists yet — you need to create them.**
 
@@ -66,7 +84,7 @@ Implement two new routes. **Neither of them exists yet — you need to create th
 
 To create a user for manual testing, use the existing `POST /admin/accounts` route (see Context above).
 
-## Step 2 — Secure password storage
+## Step 3 — Secure password storage
 
 Passwords are currently stored as clear text, which is bad practice. This step has two parts.
 
