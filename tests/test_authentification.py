@@ -1,24 +1,7 @@
 import pytest
-from flask_sqlite_app import create_app, db
+from flask_sqlite_app import db
 from sqlalchemy import text
 from random import randrange
-
-
-@pytest.fixture
-def app():
-    test_config = {
-        "TESTING": True,
-        "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
-    }
-    test_app = create_app(test_config)
-    with test_app.app_context():
-        db.create_all()
-    return test_app
-
-
-@pytest.fixture
-def client(app):
-    return app.test_client()
 
 
 @pytest.mark.display_name("Server health check")
