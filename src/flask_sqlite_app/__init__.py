@@ -16,6 +16,7 @@ def create_app(test_config=None):
     from .seed import seed_default_accounts
     from .routes import home_bp
     from .routes.admin import admin_bp
+    from .routes.reports import reports_bp
 
     with app.app_context():
         db.create_all()
@@ -23,5 +24,6 @@ def create_app(test_config=None):
 
     app.register_blueprint(home_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(reports_bp)
 
     return app
