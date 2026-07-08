@@ -6,25 +6,36 @@ You are a developer at your own start-up, building the backend of the **FutureTo
 
 The database contains a table `account` with the fields `name`, `password` and `settings`. Two sample users are created automatically the first time the app starts.
 
-The backend **already** handles the following (you do **not** need to build these — though one of them has a bug you'll fix in Step 1):
+The backend **already** handles the following (you do **not** need to build these):
 
 - `POST /admin/accounts` — create a user
 - `GET /admin/accounts` — list users
 - `DELETE /admin/accounts/<id>` — delete a user
+- `GET /admin/reports/settings` — a report aggregating settings usage across all accounts
 
-(This admin URL would not be exposed externally in production — it is here only to help you set up data.)
+(These admin URLs would not be exposed externally in production — they are here only to help you set up data.)
 
 Now you want users to be able to **log in** and **retrieve their own settings**.
 
+## Working with AI
+
+- You may use any AI assistant you like (Claude, Copilot, ChatGPT, …), as much as you like — that is how we all work now.
+- You are accountable for **every line** that lands in the code. Expect questions like *"why does this work?"* and *"what alternatives did you consider?"* about anything you write or paste.
+- Verify AI output before accepting it: run the tests, hit the endpoints by hand.
+- Think out loud. Your prompts, your checks and your decisions are part of the evaluation — not just the final code.
+
 ## Your goal
 
-1. Fix a bug in the existing account-creation endpoint (Step 1).
+1. Fix a bug in account creation (Step 1).
 2. Add token-based authentication so a user can log in and read their settings (Step 2).
 3. Store passwords securely as hashes instead of clear text (Step 3).
+4. **Stretch goal:** make the settings report fast (Step 4).
+
+Suggested pacing for a ~60-minute session: Step 1 ≈ 15 min, Step 2 ≈ 20 min, Step 3 ≈ 10 min, Step 4 with whatever time remains. **Not finishing Step 4 is expected and does not fail the challenge.**
 
 ## How this is evaluated — start here
 
-Your work is graded by an automatic test suite. **The tests are the acceptance criteria** — when they all pass, the challenge is complete.
+Your work is graded by an automatic test suite **and** by the conversation you have with your interviewer along the way. The tests are the acceptance criteria for each step — when a step's test passes, the step is functionally done.
 
 Run them at any time with:
 
@@ -34,36 +45,29 @@ poetry run pytest
 
 Recommended workflow:
 
-1. **Run `poetry run pytest` first**, before writing any code, to see the current state. The health-check test already passes; the others fail until you complete the steps below.
+1. **Run `poetry run pytest` first**, before writing any code, to see the current state. Two tests already pass; the others fail until you complete the steps below.
 2. Work **one step at a time**, in the order below, re-running the tests as you go.
 3. A step is done when its corresponding test passes. Move on once it is green.
 
-You are free to add or change any application code you need. You are **not** expected to modify the tests. They fail for different reasons — most because the required feature doesn't exist yet, and one because of an existing bug — and working through each step (building the new features and fixing the bug) is what turns the matching test green. There is nothing to "fix" in the test file itself.
-
-Each failing test maps directly to one part of the work below:
+You are free to add or change any application code you need. You are **not** expected to modify the tests. There is nothing to "fix" in the test files themselves.
 
 | Failing test | What makes it pass |
 | --- | --- |
-| `test_duplicate_name_rejected` | Step 1 — fix the duplicate-name crash |
+| `test_duplicate_name_rejected` | Step 1 — fix the account-creation bug |
 | `test_register_and_login` | Step 2 — create `POST /login` and `GET /settings` |
 | `test_db_field_size` | Step 3, Part A — enlarge the `password` field to 255 |
 | `test_password_storage` | Step 3, Part B — hash and verify passwords |
+| `test_report_performance` | Step 4 — optimize the settings report |
 
-(`test_simple`, the health check, passes from the start.)
+(`test_simple`, the health check, and `test_report_settings`, the report's functional test, pass from the start.)
 
 ## Step 1 — Fix a bug
 
-A teammate reports:
+A support ticket came in:
 
-> Creating an account with a name that already exists returns
-> `500 Internal Server Error` instead of a clean error.
+> "Sometimes, when creating an account, the API returns `500 Internal Server Error`."
 
-Reproduce it first (tip: an account named `Elaine` already exists, so try
-creating another one with that name), then find the root cause and fix it so
-that creating an account with a duplicate name:
-
-- returns a **client error** (a `4xx` status), not a `500`, and
-- does **not** create a second account.
+Reproduce it, find the root cause, and fix it so that instead of crashing the API returns a **client error** (a `4xx` status) — and no bad data is left behind.
 
 The test `test_duplicate_name_rejected` is green when this is done.
 
@@ -104,6 +108,14 @@ Update the backend so that:
 - Login verifies the submitted password against the stored hash (correct password → `200`, wrong password → non-`200`).
 
 It is recommended to use `werkzeug.security`, which is already installed in your environment.
+
+## Step 4 — Stretch goal: optimize the settings report
+
+The settings report (`GET /admin/reports/settings`) works and its functional test passes. But the infra team complains that in production — where there are thousands of accounts — this report takes the database down.
+
+Find out why, and optimize it without changing what it returns.
+
+The test `test_report_performance` is green when this is done. Running out of time here is normal: this step exists to see how far you get, not to gate the challenge.
 
 ## Environment & commands
 
