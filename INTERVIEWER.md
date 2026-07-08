@@ -30,6 +30,8 @@ Score each competency 1–4 (1 = clear no, 2 = below bar, 3 = at bar, 4 = above 
 - "What state is the SQLAlchemy session in after an `IntegrityError`? What happens if you catch the exception but don't roll back?" *(this is the depth layer — a `try/except` without `db.session.rollback()` breaks subsequent DB operations)*
 - "You could also check-then-insert. What's the race condition there?"
 
+Note: the ticket in `instructions.md` is deliberately vague, but the failing test's name reveals the duplicate-name scenario — that breadcrumb is intended. Finding the cause by reading the test is at-bar problem solving, not a shortcut.
+
 **Step 2 — token auth**
 - "JWT versus an opaque token stored in the DB — trade-offs?"
 - "Where does your token expire? What happens if it never does?"
@@ -58,4 +60,4 @@ Score each competency 1–4 (1 = clear no, 2 = below bar, 3 = at bar, 4 = above 
 make candidate-bundle
 ```
 
-This creates `candidate-bundle.zip` from the latest commit, excluding this file, `docs/`, `.superpowers/` and the `Makefile`. Send the candidate the zip, never the repo. If you change the challenge, re-run the target — it always reflects `HEAD`.
+This creates `candidate-bundle.zip` from the latest commit, excluding this file, `docs/`, `.superpowers/` and the `Makefile`. Send the candidate the zip, never the repo. If you change the challenge, re-run the target — it always reflects `HEAD`. If you add new interviewer-only files to the repo, add matching excludes to the `Makefile` — the bundle only excludes the paths listed there.

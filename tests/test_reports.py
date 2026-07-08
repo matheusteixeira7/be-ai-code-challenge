@@ -62,7 +62,7 @@ def test_report_performance(app, client):
     assert report["lang:US"] == 1001
     assert report["lang:FR"] == 1001
 
-    # The report must not issue one query per account.
+    # Query budget for the report endpoint.
     assert len(select_statements) <= 5
     # Safety belt: generous wall-time bound.
     assert elapsed < 2.0
