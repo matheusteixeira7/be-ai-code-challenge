@@ -10,7 +10,7 @@ def test_simple(app, client):
     assert response.status_code == 200
 
 
-@pytest.mark.display_name("Register a new user, log in with that user, check the retrieved settings")
+@pytest.mark.display_name("Step 2 — Register a new user, log in with that user, check the retrieved settings")
 def test_register_and_login(app, client):
     # Register a user
     settings = "autotest_settings_" + str(randrange(1, 100))
@@ -39,7 +39,7 @@ def test_register_and_login(app, client):
     assert response.get_json()["settings"] == settings
 
 
-@pytest.mark.display_name("The field in the DB was changed")
+@pytest.mark.display_name("Step 3 — The field in the DB was changed")
 def test_db_field_size():
     import sqlite3
     import os
@@ -53,7 +53,7 @@ def test_db_field_size():
     assert found_password_field
 
 
-@pytest.mark.display_name("The passwords are no more stored in clear text")
+@pytest.mark.display_name("Step 3 — A user can log in and a wrong password is rejected")
 def test_password_storage(app, client):
     # Create a user.
     response = client.post("/admin/accounts", json={
@@ -86,7 +86,7 @@ def test_password_storage(app, client):
             assert results[0][0] != "abcd1234"
 
 
-@pytest.mark.display_name("Creating a duplicate account name returns a clean error, not a crash")
+@pytest.mark.display_name("Step 1 — Creating a duplicate account name returns a clean error, not a crash")
 def test_duplicate_name_rejected(app, client):
     # Create a user.
     response = client.post("/admin/accounts", json={

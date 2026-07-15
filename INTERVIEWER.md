@@ -16,7 +16,7 @@ Score each competency 1–4 (1 = clear no, 2 = below bar, 3 = at bar, 4 = above 
 
 | Competency | Strong signal (examples) | Red flag (examples) |
 | --- | --- | --- |
-| **Problem solving** | Reproduces the bug before touching code; reads the failing test to derive the scenario; spots the N+1 unaided | Pastes the error into AI without reading any code; cannot state the root cause of the bug they just "fixed" |
+| **Problem solving** | Reproduces the bug before touching code; reads the failing test to derive the scenario; notices the plaintext-credential flaw in Step 3 unaided; spots the N+1 unaided | Pastes the error into AI without reading any code; cannot state the root cause of the bug they just "fixed" |
 | **Code quality** | New code matches the project's existing style and structure; errors handled where they occur | Accepts AI output whose style/patterns are alien to the project; dead code and unused imports pasted in |
 | **Verification** | Runs pytest after each change; hits endpoints by hand; reads AI output before accepting it | Declares a step done without running anything; trusts AI output unchecked |
 | **Communication** | Narrates the plan before acting; asks the AI rich, specific questions; explains trade-offs unprompted | Long opaque silences; "fix this" prompts; cannot explain code they pasted |
@@ -32,12 +32,12 @@ Score each competency 1–4 (1 = clear no, 2 = below bar, 3 = at bar, 4 = above 
 
 Note: the ticket in `instructions.md` is deliberately vague, but the failing test's name reveals the duplicate-name scenario — that breadcrumb is intended. Finding the cause by reading the test is at-bar problem solving, not a shortcut.
 
-**Step 2 — token auth**
+**Step 2 — auth** *(the instructions now state only the **outcome** — the settings endpoint must be protected and a user reads only their own; the candidate must arrive at a login-plus-token design themselves. Do not pre-name "token." Reaching for a token unaided is at-bar problem solving; the probes below apply once they've built it.)*
 - "JWT versus an opaque token stored in the DB — trade-offs?"
 - "Where does your token expire? What happens if it never does?"
 - "If I steal the `Authorization` header, what can I do? What would limit the damage?"
 
-**Step 3 — password hashing**
+**Step 3 — credentials** *(**hidden gem — do not reveal the flaw.** The instructions no longer mention plaintext, hashing or salting; the step just asks the candidate to review how credentials are handled. Watch whether they notice the plaintext storage unaided. If they stall, nudge neutrally only — e.g. "walk me through exactly what gets written to the `password` column when an account is created" — never name the fix. Spotting it unaided is a strong signal; needing a nudge is data, not a fail. The probes below are for after they've made the fix.)*
 - "Why a salted hash instead of plain SHA-256?"
 - "What does `werkzeug.security.generate_password_hash` use underneath?"
 - "Why did the column need to grow to 255?"
@@ -50,7 +50,7 @@ Note: the ticket in `instructions.md` is deliberately vague, but the failing tes
 ## Level calibration
 
 - **Mid-level bar:** Steps 1–3 complete with solid probe answers. Step 4 not reached is fine.
-- **Senior bar:** Steps 1–3 with depth on the probes (e.g. names the session-rollback issue unprompted, discusses token trade-offs fluently) **and** meaningful progress on Step 4 — at minimum a correct diagnosis of the N+1.
+- **Senior bar:** Steps 1–3 with depth on the probes (e.g. names the session-rollback issue unprompted, reaches for a token design in Step 2 without prompting, **spots the plaintext-credential flaw in Step 3 unaided**, discusses token trade-offs fluently) **and** meaningful progress on Step 4 — at minimum a correct diagnosis of the N+1.
 - Not finishing Step 4 never fails a candidate on its own. Meta's data point: candidates who ran out of time but reasoned soundly still got offers.
 - A candidate whose tests are all green but who fails multiple probes is **below** the bar of one with a red Step 4 and sharp answers. The artifact is not the assessment; the conversation is.
 

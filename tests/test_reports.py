@@ -7,7 +7,7 @@ from flask_sqlite_app import db
 from flask_sqlite_app.models import Account
 
 
-@pytest.mark.display_name("The settings report aggregates settings usage across accounts")
+@pytest.mark.display_name("Step 4 — The settings report aggregates settings usage across accounts")
 def test_report_settings(app, client):
     # The seeded accounts already contribute:
     # Elaine: "lang:US ; theme:black", Herman: "lang:FR".
@@ -27,7 +27,7 @@ def test_report_settings(app, client):
     assert report["theme:white"] == 1
 
 
-@pytest.mark.display_name("The settings report stays fast with thousands of accounts")
+@pytest.mark.display_name("Step 4 — The settings report stays fast with thousands of accounts")
 def test_report_performance(app, client):
     # Seed 2,000 accounts on top of the 2 default ones (Elaine: lang:US,
     # Herman: lang:FR). Odd i -> lang:US, even i -> lang:FR: 1,000 each.

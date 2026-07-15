@@ -10,3 +10,7 @@ node_modules/
 junit-reports/
 .vscode
 candidate-bundle.zip
+
+# AI
+.agents/
+.claude/

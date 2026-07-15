@@ -15,7 +15,7 @@ The backend **already** handles the following (you do **not** need to build thes
 
 (These admin URLs would not be exposed externally in production — they are here only to help you set up data.)
 
-Now you want users to be able to **log in** and **retrieve their own settings**.
+Now you want ordinary users — not just admins — to be able to read **their own** settings, securely.
 
 ## Working with AI
 
@@ -27,39 +27,33 @@ Now you want users to be able to **log in** and **retrieve their own settings**.
 ## Your goal
 
 1. Fix a bug in account creation (Step 1).
-2. Add token-based authentication so a user can log in and read their settings (Step 2).
-3. Store passwords securely as hashes instead of clear text (Step 3).
-4. **Stretch goal:** make the settings report fast (Step 4).
+2. Let a user read their own settings — and only their own (Step 2).
+3. Review how the app handles account credentials, and harden anything that needs it (Step 3).
+4. **Stretch goal:** keep the settings report fast at scale (Step 4).
 
 Suggested pacing for a ~60-minute session: Step 1 ≈ 15 min, Step 2 ≈ 20 min, Step 3 ≈ 10 min, Step 4 with whatever time remains. **Not finishing Step 4 is expected and does not fail the challenge.**
 
 ## How this is evaluated — start here
 
-Your work is graded by an automatic test suite **and** by the conversation you have with your interviewer along the way. The tests are the acceptance criteria for each step — when a step's test passes, the step is functionally done.
+Your work is graded by an automatic test suite **and** by the conversation you have with your interviewer along the way. Treat each step's test as its acceptance criteria — but read this carefully:
 
-Run them at any time with:
+> **All tests green is not an automatic pass, and a step left red is not an automatic fail.** How you reason about the problem, how you verify your work, and how you explain your decisions are weighed at least as heavily as the final diff.
+
+Run the suite at any time with:
 
 ```
 poetry run pytest
 ```
 
+Every acceptance test's name is **prefixed with the step it belongs to**, so `poetry run pytest` shows you at a glance which step each result maps to. Two tests pass from the start — a server health check and the settings report's existing functional test; the other five go green as you complete the steps below.
+
 Recommended workflow:
 
-1. **Run `poetry run pytest` first**, before writing any code, to see the current state. Two tests already pass; the others fail until you complete the steps below.
+1. **Run `poetry run pytest` first**, before writing any code, to see the current state.
 2. Work **one step at a time**, in the order below, re-running the tests as you go.
-3. A step is done when its corresponding test passes. Move on once it is green.
+3. A step is functionally done when its corresponding test passes. Move on once it is green.
 
-You are free to add or change any application code you need. You are **not** expected to modify the tests. There is nothing to "fix" in the test files themselves.
-
-| Failing test | What makes it pass |
-| --- | --- |
-| `test_duplicate_name_rejected` | Step 1 — fix the account-creation bug |
-| `test_register_and_login` | Step 2 — create `POST /login` and `GET /settings` |
-| `test_db_field_size` | Step 3, Part A — enlarge the `password` field to 255 |
-| `test_password_storage` | Step 3, Part B — hash and verify passwords |
-| `test_report_performance` | Step 4 — optimize the settings report |
-
-(`test_simple`, the health check, and `test_report_settings`, the report's functional test, pass from the start.)
+You are free to add or change any application code you need. You are **not** expected to modify the tests. There is nothing to "fix" in the test files themselves — but reading them to learn the exact contract a step expects is fair game and encouraged.
 
 ## Step 1 — Fix a bug
 
@@ -69,53 +63,52 @@ A support ticket came in:
 
 Reproduce it, find the root cause, and fix it so that instead of crashing the API returns a **client error** (a `4xx` status) — and no bad data is left behind.
 
-The test `test_duplicate_name_rejected` is green when this is done.
+The Step 1 test is green when this is done.
 
-## Step 2 — Token authentication
+## Step 2 — Let a user read their own settings
 
-Implement two new routes. **Neither of them exists yet — you need to create them.**
+Today anyone can call the admin routes, but an ordinary user has no way to read **their own** settings — and only their own. Build that.
 
-**Log in — `POST /login`**
+The requirements:
 
-- Request body: a JSON object with the keys `name` and `password`.
-- If the password is correct: respond with status `200` and a JSON body containing the key `token`, set to an authentication token.
-- The token must let the backend identify *which* user is logged in on later requests.
+- A user must have a way to **prove who they are** to the backend.
+- Given that proof, a user can retrieve their own `settings` value — and must **not** be able to read anyone else's.
+- The endpoint that returns a user's settings must be **protected**: no valid proof of identity, no data.
 
-**Read settings — `GET /settings`**
+*How* a user proves their identity is your design decision — that choice is part of what we're evaluating, so reach for whatever mechanism you think fits and be ready to defend it.
 
-- The request must include an `Authorization` header set to `Bearer <token>`, where `<token>` is the token returned by `/login`.
-- If the token is valid: respond with a JSON body containing the key `settings`, set to that user's `settings` value from the database.
+The precise request/response contract the grader checks (route names, headers, response keys, status codes) is pinned down by the acceptance tests in `tests/test_authentification.py`. Reading those tests to derive the exact contract is expected and legitimate — the point is that the *approach* is yours to choose, not that the details are secret.
 
-To create a user for manual testing, use the existing `POST /admin/accounts` route (see Context above).
+## Step 3 — Credentials
 
-## Step 3 — Secure password storage
+Now that a user can log in, read the account model and the account-creation code again — this time as if real users were signing up tomorrow.
 
-Passwords are currently stored as clear text, which is bad practice. This step has two parts.
+Is there anything about the way this app handles account credentials that you would want to change before that happens? If so, make the change, and be ready to explain **why** it matters.
 
-**Part A — Enlarge the `password` field**
+A couple of acceptance notes, so the automated checks stay deterministic:
 
-The `password` column is too short to hold a password hash. Change its length from `100` to `255`.
+- The grader inspects the **actual SQLite file** (`src/instance/app.db`), not just your Python — any schema change has to reach the database itself. Because this is a development environment, it is fine to delete `app.db` to apply one.
+- If your change touches the `password` column, the grader expects that column to be `VARCHAR(255)` in the database file.
+- `werkzeug.security` is installed in your environment and available should you want it.
 
-> ⚠️ The grader checks the **actual column size in the SQLite file**, not just in your code. Make sure the change is reflected in the database itself.
+The two Step 3 tests go green when this is done.
 
-Because this is a development environment, it is fine to delete all existing data in the database to apply the change.
+## Step 4 — Stretch goal: keep the settings report fast at scale
 
-**Part B — Hash the passwords**
+Treat this final step as a short product spec and turn it into working code — the way most work arrives now: you're handed intent and constraints, and you decide the implementation.
 
-Update the backend so that:
+**Product Requirements — settings report performance**
 
-- Passwords are stored as **hashes** when a user is created.
-- Login verifies the submitted password against the stored hash (correct password → `200`, wrong password → non-`200`).
+- **Background:** `GET /admin/reports/settings` returns correct results today, but in production — where there are thousands of accounts — it hammers the database and can take it down.
+- **Goal:** the report stays responsive as the number of accounts grows, while returning exactly the same output.
+- **Requirements:**
+  - **R1** — The response body is byte-for-byte unchanged, and the report's existing functional test stays green.
+  - **R2** — The endpoint issues a small, **constant** number of `SELECT` queries; the query count must not grow with the number of accounts.
+  - **R3** — It responds in well under a couple of seconds at a few thousand accounts.
+- **Out of scope:** caching, new endpoints, pagination, or any change to the response shape.
+- **Acceptance:** the Step 4 performance test passes and the report's functional test still passes.
 
-It is recommended to use `werkzeug.security`, which is already installed in your environment.
-
-## Step 4 — Stretch goal: optimize the settings report
-
-The settings report (`GET /admin/reports/settings`) works and its functional test passes. But the infra team complains that in production — where there are thousands of accounts — this report takes the database down.
-
-Find out why, and optimize it without changing what it returns.
-
-The test `test_report_performance` is green when this is done. Running out of time here is normal: this step exists to see how far you get, not to gate the challenge.
+Running out of time here is normal: this step exists to see how far you get, not to gate the challenge.
 
 ## Environment & commands
 
